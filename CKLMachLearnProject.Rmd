@@ -42,7 +42,8 @@ myTesting <- myTesting[, -(1:5)]
 Comparing Algorithms: Classification Tree Vs Random Forest
 ==============================
 ```{r rPartModelTrain, cache=TRUE}
-modRPart <- train(classe ~ ., data=myTraining, method="rpart")
+rPartFitControl <- trainControl(method="cv", number=3, verboseIter=F)
+modRPart <- train(classe ~ ., data=myTraining, preProcess=c("center", "scale"), method="rpart", trControl=rPartFitControl)
 ```
 ```{r rPartModelEval, cache=TRUE}
 predRPart <- predict(modRPart, myTesting)
@@ -53,8 +54,9 @@ accuracyRPart <- conMatRPart$overall["Accuracy"]
 Classification Tree accuracy is `r accuracyRPart`
 
 ##TODO add the CV stuff for both
-```{r rfModelTrain, cache=TRUE}
-modRf <- train(classe ~ ., data=myTraining, method="rf")
+```{r rfModelTrain, cache=TRUE, results="hide"}
+RfFitControl <- trainControl(method="cv", number=3, verboseIter=F)
+modRf <- train(classe ~ ., data=myTraining, method="rf", trControl=RfFitControl)
 ```
 ```{r rfModelEval, cache=TRUE}
 predRf <- predict(modRf, myTesting)
@@ -62,4 +64,7 @@ conMatRf <- confusionMatrix(predRf, myTesting$classe)
 accuracyRf <- conMatRf$overall["Accuracy"]
 ```
 ##TODO add a chart
-Classification Tree accuracy is `r accuracyRf`
+Random Forest accuracy is `r accuracyRf`
+```{r rfModelInDepth, cache=TRUE}
+print(modRf)
+```
