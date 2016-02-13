@@ -1,0 +1,65 @@
+---
+title: 'Practical Machine Learning: Classifying Human Learning in Excercising'
+author: "Chi Lam"
+date: "February 12, 2016"
+output: html_document
+---
+
+Executive Summary
+===================
+
+Data Loading and Preperation
+============================
+```{r libsLoad, cache=TRUE, results="hide"}
+library(caret)
+set.seed(852489)
+```
+```{r dataLoad, cache=TRUE, results="hide"}
+training <‐ read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"), na.strings=c("NA","#DIV/0!",""))
+testing <‐ read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"), na.strings=c("NA","#DIV/0!",""))
+```
+```{r dataPrep, cache=TRUE}
+#partition into training and testing
+inTrain <‐ createDataPartition(y=training$classe, p=0.6, list=FALSE)
+myTraining <‐ training[inTrain, ]
+myTesting <‐ training[‐inTrain, ]
+
+# remove variables with nearly zero variance
+nzv <- nearZeroVar(myTraining)
+myTraining <- myTraining[, -nzv]
+myTesting <- myTesting[, -nzv]
+
+# remove variables that are often NA
+mostlyNA <- sapply(myTraining, function(x) mean(is.na(x))) > 0.80
+myTraining <- myTraining[, mostlyNA==F]
+myTesting <- myTesting[, mostlyNA==F]
+
+# remove first five variables
+myTraining <- myTraining[, -(1:5)]
+myTesting <- myTesting[, -(1:5)]
+```
+
+Comparing Algorithms: Classification Tree Vs Random Forest
+==============================
+```{r rPartModelTrain, cache=TRUE}
+modRPart <- train(classe ~ ., data=myTraining, method="rpart")
+```
+```{r rPartModelEval, cache=TRUE}
+predRPart <- predict(modRPart, myTesting)
+conMatRPart <- confusionMatrix(predRPart, myTesting$classe)
+accuracyRPart <- conMatRPart$overall["Accuracy"]
+```
+
+Classification Tree accuracy is `r accuracyRPart`
+
+##TODO add the CV stuff for both
+```{r rfModelTrain, cache=TRUE}
+modRf <- train(classe ~ ., data=myTraining, method="rf")
+```
+```{r rfModelEval, cache=TRUE}
+predRf <- predict(modRf, myTesting)
+conMatRf <- confusionMatrix(predRf, myTesting$classe)
+accuracyRf <- conMatRf$overall["Accuracy"]
+```
+##TODO add a chart
+Classification Tree accuracy is `r accuracyRf`
