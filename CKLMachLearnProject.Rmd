@@ -1,17 +1,22 @@
 ---
-title: 'Practical Machine Learning: Classifying Human Learning in Excercising'
+title: 'Random Forest Is an Accurate Method in Classifying Lifting Errors with Accelerometers'
 author: "Chi Lam"
 date: "February 12, 2016"
 output: html_document
 ---
 
-Executive Summary
-===================
+Introduction
+==============
+The *Weight Lifting Exercises Dataset* of the *Human Activity Recognition* project were used to determine if a *Classification Tree* algorithm, or a *Random Forest* algorithm is more accurate to identify four types of errors (class B, C, D, E) from wearable accelerometer data (class A means the exercise was done correctly).     
 
-Data Loading and Preperation
+Executive Summary
+==================
+A *Random Forest* algorithm is determined to be significantly more accurate to classify lifting exercise errors in the *Weight Lifting Exercises Dataset*.
+
+Data Loading and Preparation
 ============================
 ### Libraries and Parameters
-The caret libary is loaded for the machine learning capabilities, and a random number seed is set to ensure reproducibility.
+The caret library  is loaded for the machine learning capabilities, and a random number seed is set to ensure reproducibility.
 ```{r libsLoad, cache=TRUE, results="hide"}
 library(caret)
 set.seed(852489)
@@ -25,7 +30,7 @@ testing <‐ read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/p
 ```
 
 ### Preparing and cleaning the Data
-The *training* dataset is split into two, one for training the models, one for evaluting the models.  The training part of the data is only 60% to keep the model training process speed at an acceptable level.  Variables that are mostly constant, NA, and otherwise not useful are removed to improve the performance of the models.
+The *training* dataset is split into two, one for training the models, one for evaluating the models.  The training part of the data is only 60% to keep the model training process speed at an acceptable level.  Variables that are mostly constant, NA, and otherwise not useful are removed to improve the performance of the models.
 ```{r dataPrep, cache=TRUE}
 #partition into training and testing
 inTrain <‐ createDataPartition(y=training$classe, p=0.6, list=FALSE)
@@ -47,12 +52,12 @@ myTraining <- myTraining[, -(1:5)]
 myTesting <- myTesting[, -(1:5)]
 ```
 
-Algorithm Selection: Classification Tree Vs Random Forest
+Algorithm Selection: Classification Tree Vs. Random Forest
 ==============================
-Classification Tree and Random Forest algorithms were used to build models to classify the excercise errors.
+Classification Tree and Random Forest algorithms were used to build models to classify the exercise errors.
 
 ### Classification Tree 
-The following code builds a *Classification Tree* model.  It also preprocesses the data by centering and scaling it to improve the model's performance, and limit the cross validation to 3 folds to make the model comparable to Random Foest. Random Forest needs this limit to have acceptable speed.
+The following code builds a *Classification Tree* model.  It also preprocesses the data by centering and scaling it to improve the model's performance, and limit the cross validation to 3 folds to make the model comparable to Random Forest. Random Forest needs this limit to have an acceptable speed.
 
 ```{r rPartModelTrain, cache=TRUE}
 rPartFitControl <- trainControl(method="cv", number=3, verboseIter=F)
@@ -65,10 +70,10 @@ predRPart <- predict(modRPart, myTesting)
 conMatRPart <- confusionMatrix(predRPart, myTesting$classe)
 accuracyRPart <- conMatRPart$overall["Accuracy"]
 ```
-The *Classification Tree* only has an accuracy of `r accuracyRPart`.  It is therefore not a very good model to classify the excercise errors.
+The *Classification Tree* only has an out-of-sample accuracy of `r accuracyRPart`.  It is therefore not a very good model to classify the lifting exercise errors.
 
 ### Random Forest
-The following code builds a *Random Forest* model.  It limits the cross validation to 3 folds to give an acceptable speed. The Classification Tree model has this limit too to make both models comparable.
+The following code builds a *Random Forest* model.  It limits the cross validation to 3 folds to give an acceptable speed. The Classification Tree model has this limit too to make both models comparable.  (Although already limited to give acceptable speed, the code still took about 15 minutes for a moderately fast computer in 2016 to complete)
 
 ```{r rfModelTrain, cache=TRUE, results="hide"}
 RfFitControl <- trainControl(method="cv", number=3, verboseIter=F)
@@ -82,19 +87,22 @@ predRf <- predict(modRf, myTesting)
 conMatRf <- confusionMatrix(predRf, myTesting$classe)
 accuracyRf <- conMatRf$overall["Accuracy"]
 ```
-TODO add a chart of some sort
+#'TODO add a chart of some sort
 
-The *Random Forest* has an accuracy of `r accuracyRf`.  It is a very good accuracy.  Therefore, it is chosen to classify the excercise error of the testing data set.
+The *Random Forest* has an out-of-sample accuracy of `r accuracyRf`.  It is a very good accuracy, therefore, it is chosen to classify the lifting exercise errors of the testing data set.  The following code shows the confusion matrix of the Random Forest model: it shows the excellent accuracy in more details.
 ```{r rfModelInDepth, cache=TRUE}
-print(modRf)
+print(conMatRf)
 ```
 Classifying Excercise Errors Using Random Forest
 ==========
-The following code classify the
+The following code classifies the errors in the test data set using the random forest model.  The results were submitted to the Coursera test and were graded correct.
 ```{r rfModelTestData, cache=TRUE}
 predict(modRf, newdata=testing)
-
 ```
+
+Conclusion
+==========
+Using a *Random Forest* algorithm can accurately classify the error type in a weight lifting exercise with wearable accelerometer data.  The out-of-sample accuracy is `r accuracyRf`.  It is significantly better than using a *Classification Tree* algorithm (out-of-sample accuracy is only `r accuracyRPart`).  The *Random Forest* algorithm takes significantly longer than the *Classification Tree* algorithm, but the huge accuracy difference justifies the cost.
 
 References
 ===========
