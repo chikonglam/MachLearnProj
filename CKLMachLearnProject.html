@@ -126,8 +126,8 @@ modRPart &lt;- train(classe ~ ., data=myTraining, preProcess=c(&quot;center&quot
 conMatRPart &lt;- confusionMatrix(predRPart, myTesting$classe)
 accuracyRPart &lt;- conMatRPart$overall[&quot;Accuracy&quot;]; print(accuracyRPart)</code></pre>
 <pre><code>##  Accuracy 
-## 0.5638542</code></pre>
-<p>The <em>Classification Tree</em> only has an out-of-sample accuracy of 0.5638542. It is therefore not a very good model to classify the lifting exercise errors.</p>
+## 0.5655111</code></pre>
+<p>The <em>Classification Tree</em> only has an out-of-sample accuracy of 0.5655111. It is therefore not a very good model to classify the lifting exercise errors.</p>
 </div>
 <div id="random-forest" class="section level3">
 <h3>Random Forest</h3>
@@ -139,41 +139,41 @@ modRf &lt;- train(classe ~ ., data=myTraining, method=&quot;rf&quot;, trControl=
 conMatRf &lt;- confusionMatrix(predRf, myTesting$classe)
 accuracyRf &lt;- conMatRf$overall[&quot;Accuracy&quot;]; print(accuracyRf)</code></pre>
 <pre><code>##  Accuracy 
-## 0.9978333</code></pre>
-<p>The <em>Random Forest</em> has an out-of-sample accuracy of 0.9978333. It is a very good accuracy, therefore, it is chosen to classify the lifting exercise errors of the testing data set. The following code shows the confusion matrix of the Random Forest model: it shows the excellent accuracy in more details.</p>
+## 0.9980882</code></pre>
+<p>The <em>Random Forest</em> has an out-of-sample accuracy of 0.9980882. It is a very good accuracy, therefore, it is chosen to classify the lifting exercise errors of the testing data set. The following code shows the confusion matrix of the Random Forest model: it shows the excellent accuracy in more details.</p>
 <pre class="r"><code>print(conMatRf)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 2232    7    0    0    0
-##          B    0 1509    1    0    1
-##          C    0    2 1367    3    2
-##          D    0    0    0 1283    1
+##          A 2232    5    0    0    0
+##          B    0 1512    2    0    0
+##          C    0    0 1366    3    0
+##          D    0    1    0 1283    4
 ##          E    0    0    0    0 1438
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9978          
-##                  95% CI : (0.9965, 0.9987)
+##                Accuracy : 0.9981          
+##                  95% CI : (0.9968, 0.9989)
 ##     No Information Rate : 0.2845          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9973          
+##                   Kappa : 0.9976          
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            1.0000   0.9941   0.9993   0.9977   0.9972
-## Specificity            0.9988   0.9997   0.9989   0.9998   1.0000
-## Pos Pred Value         0.9969   0.9987   0.9949   0.9992   1.0000
-## Neg Pred Value         1.0000   0.9986   0.9998   0.9995   0.9994
+## Sensitivity            1.0000   0.9960   0.9985   0.9977   0.9972
+## Specificity            0.9991   0.9997   0.9995   0.9992   1.0000
+## Pos Pred Value         0.9978   0.9987   0.9978   0.9961   1.0000
+## Neg Pred Value         1.0000   0.9991   0.9997   0.9995   0.9994
 ## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2845   0.1923   0.1742   0.1635   0.1833
-## Detection Prevalence   0.2854   0.1926   0.1751   0.1637   0.1833
-## Balanced Accuracy      0.9994   0.9969   0.9991   0.9988   0.9986</code></pre>
-<p>Note that the 95% confidence interval of this out-of-sample accuracy is ( 0.9965331, 0.9987373 ), therefore, the estimated out-of-sample accuracy of another dataset is also estimated to be between 0.9965331 and 0.9987373.</p>
+## Detection Rate         0.2845   0.1927   0.1741   0.1635   0.1833
+## Detection Prevalence   0.2851   0.1930   0.1745   0.1642   0.1833
+## Balanced Accuracy      0.9996   0.9979   0.9990   0.9985   0.9986</code></pre>
+<p>Note that the 95% confidence interval of this out-of-sample accuracy is ( 0.9968487, 0.9989296 ), therefore, the estimated out-of-sample accuracy of another dataset is also estimated to be between 0.9968487 and 0.9989296.</p>
 </div>
 </div>
 <div id="classifying-lifting-exercise-errors-using-random-forest" class="section level1">
@@ -185,7 +185,7 @@ accuracyRf &lt;- conMatRf$overall[&quot;Accuracy&quot;]; print(accuracyRf)</code
 </div>
 <div id="conclusion" class="section level1">
 <h1>Conclusion</h1>
-<p>Using a <em>Random Forest</em> algorithm can accurately classify the error type in a weight lifting exercise with wearable accelerometer data. The out-of-sample accuracy is 0.9978333. It is significantly better than using a <em>Classification Tree</em> algorithm (out-of-sample accuracy is only 0.5638542). The <em>Random Forest</em> algorithm takes significantly longer than the <em>Classification Tree</em> algorithm, but the huge accuracy difference justifies the added cost.</p>
+<p>Using a <em>Random Forest</em> algorithm can accurately classify the error type in a weight lifting exercise with wearable accelerometer data. The out-of-sample accuracy is 0.9980882. It is significantly better than using a <em>Classification Tree</em> algorithm (out-of-sample accuracy is only 0.5655111). The <em>Random Forest</em> algorithm takes significantly longer than the <em>Classification Tree</em> algorithm, but the huge accuracy difference justifies the added cost.</p>
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>
