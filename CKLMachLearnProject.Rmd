@@ -1,8 +1,10 @@
 ---
-title: 'Random Forest Is an Accurate Method in Classifying Lifting Errors with Accelerometers'
+title: 'Random Forest Is an Accurate Algorithm in Classifying Lifting Errors with Accelerometers'
 author: "Chi Lam"
 date: "February 12, 2016"
-output: html_document
+output: 
+  html_document: 
+    keep_md: yes
 ---
 
 Introduction
@@ -33,9 +35,9 @@ testing <‐ read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/p
 The *training* dataset is split into two, one for training the models, one for evaluating the models.  The training part of the data is only 60% to keep the model training process speed at an acceptable level.  Variables that are mostly constant, NA, and otherwise not useful are removed to improve the performance of the models.
 ```{r dataPrep, cache=TRUE}
 #partition into training and testing
-inTrain <‐ createDataPartition(y=training$classe, p=0.6, list=FALSE)
-myTraining <‐ training[inTrain, ]
-myTesting <‐ training[‐inTrain, ]
+inTrain <- createDataPartition(y=training$classe, p=0.6, list=FALSE)
+myTraining <- training[inTrain, ]
+myTesting <- training[‐inTrain, ]
 
 # remove variables with nearly zero variance
 nzv <- nearZeroVar(myTraining)
@@ -68,12 +70,12 @@ The following code evaluates the accuracy of the model.
 ```{r rPartModelEval, cache=TRUE}
 predRPart <- predict(modRPart, myTesting)
 conMatRPart <- confusionMatrix(predRPart, myTesting$classe)
-accuracyRPart <- conMatRPart$overall["Accuracy"]
+accuracyRPart <- conMatRPart$overall["Accuracy"]; print(accuracyRPart)
 ```
 The *Classification Tree* only has an out-of-sample accuracy of `r accuracyRPart`.  It is therefore not a very good model to classify the lifting exercise errors.
 
 ### Random Forest
-The following code builds a *Random Forest* model.  It limits the cross validation to 3 folds to give an acceptable speed. The Classification Tree model has this limit too to make both models comparable.  (Although already limited to give acceptable speed, the code still took about 15 minutes for a moderately fast computer in 2016 to complete)
+The following code builds a *Random Forest* model.  It limits the cross validation to 3 folds to have an acceptable speed. The Classification Tree model has this limit too to make both models comparable.  (Although already limited to give acceptable speed, the code still took about 15 minutes for a moderately fast computer in 2016 to complete)
 
 ```{r rfModelTrain, cache=TRUE, results="hide"}
 RfFitControl <- trainControl(method="cv", number=3, verboseIter=F)
@@ -85,24 +87,25 @@ The following code evaluates the accuracy of the model.
 ```{r rfModelEval, cache=TRUE}
 predRf <- predict(modRf, myTesting)
 conMatRf <- confusionMatrix(predRf, myTesting$classe)
-accuracyRf <- conMatRf$overall["Accuracy"]
+accuracyRf <- conMatRf$overall["Accuracy"]; print(accuracyRf)
 ```
-#'TODO add a chart of some sort
 
 The *Random Forest* has an out-of-sample accuracy of `r accuracyRf`.  It is a very good accuracy, therefore, it is chosen to classify the lifting exercise errors of the testing data set.  The following code shows the confusion matrix of the Random Forest model: it shows the excellent accuracy in more details.
 ```{r rfModelInDepth, cache=TRUE}
 print(conMatRf)
 ```
-Classifying Excercise Errors Using Random Forest
+Note that the 95% confidence interval of this out-of-sample accuracy is ( `r conMatRf$overall["AccuracyLower"]`, `r conMatRf$overall["AccuracyUpper"]` ), therefore, the estimated out-of-sample accuracy of another dataset is also estimated to be between `r conMatRf$overall["AccuracyLower"]` and `r conMatRf$overall["AccuracyUpper"]`.
+
+Classifying Lifting Exercise Errors Using Random Forest
 ==========
-The following code classifies the errors in the test data set using the random forest model.  The results were submitted to the Coursera test and were graded correct.
+The following code classifies the errors in the test data set using the Random Forest model.  The results were submitted to the Coursera test and were graded correct.
 ```{r rfModelTestData, cache=TRUE}
 predict(modRf, newdata=testing)
 ```
 
 Conclusion
 ==========
-Using a *Random Forest* algorithm can accurately classify the error type in a weight lifting exercise with wearable accelerometer data.  The out-of-sample accuracy is `r accuracyRf`.  It is significantly better than using a *Classification Tree* algorithm (out-of-sample accuracy is only `r accuracyRPart`).  The *Random Forest* algorithm takes significantly longer than the *Classification Tree* algorithm, but the huge accuracy difference justifies the cost.
+Using a *Random Forest* algorithm can accurately classify the error type in a weight lifting exercise with wearable accelerometer data.  The out-of-sample accuracy is `r accuracyRf`.  It is significantly better than using a *Classification Tree* algorithm (out-of-sample accuracy is only `r accuracyRPart`).  The *Random Forest* algorithm takes significantly longer than the *Classification Tree* algorithm, but the huge accuracy difference justifies the added cost.
 
 References
 ===========
