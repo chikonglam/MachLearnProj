@@ -1,0 +1,112 @@
+---
+title: 'Random Forest Is an Accurate Algorithm in Classifying Lifting Errors with Accelerometers'
+author: "Chi Lam"
+date: "February 12, 2016"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+Introduction
+==============
+The *Weight Lifting Exercises Dataset* of the *Human Activity Recognition* project were used to determine if a *Classification Tree* algorithm, or a *Random Forest* algorithm is more accurate to identify four types of errors (class B, C, D, E) from wearable accelerometer data (class A means the exercise was done correctly).     
+
+Executive Summary
+==================
+A *Random Forest* algorithm is determined to be significantly more accurate to classify lifting exercise errors in the *Weight Lifting Exercises Dataset*.
+
+Data Loading and Preparation
+============================
+### Libraries and Parameters
+The caret library  is loaded for the machine learning capabilities, and a random number seed is set to ensure reproducibility.
+```{r libsLoad, cache=TRUE, results="hide"}
+library(caret)
+set.seed(852489)
+```
+
+### Loading the Datasets
+The following code loads the training and testing datasets in.  The original data source is available on the Human Activity Recognition site:  http://groupware.les.inf.puc-rio.br/har 
+```{r dataLoad, cache=TRUE, results="hide"}
+training <‐ read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"), na.strings=c("NA","#DIV/0!",""))
+testing <‐ read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"), na.strings=c("NA","#DIV/0!",""))
+```
+
+### Preparing and cleaning the Data
+The *training* dataset is split into two, one for training the models, one for evaluating the models.  The training part of the data is only 60% to keep the model training process speed at an acceptable level.  Variables that are mostly constant, NA, and otherwise not useful are removed to improve the performance of the models.
+```{r dataPrep, cache=TRUE}
+#partition into training and testing
+inTrain <- createDataPartition(y=training$classe, p=0.6, list=FALSE)
+myTraining <- training[inTrain, ]
+myTesting <- training[‐inTrain, ]
+
+# remove variables with nearly zero variance
+nzv <- nearZeroVar(myTraining)
+myTraining <- myTraining[, -nzv]
+myTesting <- myTesting[, -nzv]
+
+# remove variables that are often NA
+mostlyNA <- sapply(myTraining, function(x) mean(is.na(x))) > 0.80
+myTraining <- myTraining[, mostlyNA==F]
+myTesting <- myTesting[, mostlyNA==F]
+
+# remove first five variables
+myTraining <- myTraining[, -(1:5)]
+myTesting <- myTesting[, -(1:5)]
+```
+
+Algorithm Selection: Classification Tree Vs. Random Forest
+==============================
+Classification Tree and Random Forest algorithms were used to build models to classify the exercise errors.
+
+### Classification Tree 
+The following code builds a *Classification Tree* model.  It also preprocesses the data by centering and scaling it to improve the model's performance, and limit the cross validation to 3 folds to make the model comparable to Random Forest. Random Forest needs this limit to have an acceptable speed.
+
+```{r rPartModelTrain, cache=TRUE}
+rPartFitControl <- trainControl(method="cv", number=3, verboseIter=F)
+modRPart <- train(classe ~ ., data=myTraining, preProcess=c("center", "scale"), method="rpart", trControl=rPartFitControl)
+```
+
+The following code evaluates the accuracy of the model.
+```{r rPartModelEval, cache=TRUE}
+predRPart <- predict(modRPart, myTesting)
+conMatRPart <- confusionMatrix(predRPart, myTesting$classe)
+accuracyRPart <- conMatRPart$overall["Accuracy"]; print(accuracyRPart)
+```
+The *Classification Tree* only has an out-of-sample accuracy of `r accuracyRPart`.  It is therefore not a very good model to classify the lifting exercise errors.
+
+### Random Forest
+The following code builds a *Random Forest* model.  It limits the cross validation to 3 folds to have an acceptable speed. The Classification Tree model has this limit too to make both models comparable.  (Although already limited to give acceptable speed, the code still took about 15 minutes for a moderately fast computer in 2016 to complete)
+
+```{r rfModelTrain, cache=TRUE, results="hide"}
+RfFitControl <- trainControl(method="cv", number=3, verboseIter=F)
+modRf <- train(classe ~ ., data=myTraining, method="rf", trControl=RfFitControl)
+```
+
+The following code evaluates the accuracy of the model.
+
+```{r rfModelEval, cache=TRUE}
+predRf <- predict(modRf, myTesting)
+conMatRf <- confusionMatrix(predRf, myTesting$classe)
+accuracyRf <- conMatRf$overall["Accuracy"]; print(accuracyRf)
+```
+
+The *Random Forest* has an out-of-sample accuracy of `r accuracyRf`.  It is a very good accuracy, therefore, it is chosen to classify the lifting exercise errors of the testing data set.  The following code shows the confusion matrix of the Random Forest model: it shows the excellent accuracy in more details.
+```{r rfModelInDepth, cache=TRUE}
+print(conMatRf)
+```
+Note that the 95% confidence interval of this out-of-sample accuracy is ( `r conMatRf$overall["AccuracyLower"]`, `r conMatRf$overall["AccuracyUpper"]` ), therefore, the estimated out-of-sample accuracy of another dataset is also estimated to be between `r conMatRf$overall["AccuracyLower"]` and `r conMatRf$overall["AccuracyUpper"]`.
+
+Classifying Lifting Exercise Errors Using Random Forest
+==========
+The following code classifies the errors in the test data set using the Random Forest model.  The results were submitted to the Coursera test and were graded correct.
+```{r rfModelTestData, cache=TRUE}
+predict(modRf, newdata=testing)
+```
+
+Conclusion
+==========
+Using a *Random Forest* algorithm can accurately classify the error type in a weight lifting exercise with wearable accelerometer data.  The out-of-sample accuracy is `r accuracyRf`.  It is significantly better than using a *Classification Tree* algorithm (out-of-sample accuracy is only `r accuracyRPart`).  The *Random Forest* algorithm takes significantly longer than the *Classification Tree* algorithm, but the huge accuracy difference justifies the added cost.
+
+References
+===========
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
